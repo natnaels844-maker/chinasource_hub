@@ -4,19 +4,31 @@ import {products, type Product} from './products';
 type SupplierInfo={supplier:string;address:string;url:string};
 type Currency='USD'|'ETB'|'EUR'|'GBP'|'AED'|'CNY';
 const PAGE_SIZE=24;
-const CURRENCIES:Record<Currency,{label:string;symbol:string;rate:number}>= {
-  USD:{label:'USD',symbol:'$',rate:1/153}, ETB:{label:'ETB',symbol:'ETB ',rate:1}, EUR:{label:'EUR',symbol:'€',rate:1/180}, GBP:{label:'GBP',symbol:'£',rate:1/210}, AED:{label:'AED',symbol:'د.إ ',rate:1/42}, CNY:{label:'CNY',symbol:'¥',rate:1/21}
+const CURRENCIES:Record<Currency,{label:string;symbol:string;etbPerUnit:number}>= {
+  USD:{label:'USD',symbol:'$',etbPerUnit:153},
+  ETB:{label:'ETB',symbol:'ETB ',etbPerUnit:1},
+  EUR:{label:'EUR',symbol:'€',etbPerUnit:180},
+  GBP:{label:'GBP',symbol:'£',etbPerUnit:210},
+  AED:{label:'AED',symbol:'د.إ ',etbPerUnit:42},
+  CNY:{label:'CNY',symbol:'¥',etbPerUnit:21}
 };
-const validCurrency=(value:string|null):Currency=>value&&value in CURRENCIES?value as Currency:'USD';
-function priceInCurrency(price:string,currency:Currency){const amount=Number(price.replace(/[^0-9.]/g,''));if(!Number.isFinite(amount))return price;const c=CURRENCIES[currency];const converted=amount*c.rate;return `${c.symbol}${converted.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;}
+const validCurrency=(value:string|null):Currency=>value&&Object.prototype.hasOwnProperty.call(CURRENCIES,value)?value as Currency:'USD';
+function priceInCurrency(price:string,currency:Currency){
+  const amountEtb=Number(price.replace(/[^0-9.]/g,''));
+  if(!Number.isFinite(amountEtb))return price;
+  const c=CURRENCIES[currency];
+  const converted=amountEtb/c.etbPerUnit;
+  return `${c.symbol}${converted.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+}
 
 export default function App(){
-  const[page,setPage]=useState('home'),[q,setQ]=useState(''),[cat,setCat]=useState('All'),[pageNo,setPageNo]=useState(1),[selected,setSelected]=useState<Product|null>(null),[info,setInfo]=useState<SupplierInfo|null>(null),[notice,setNotice]=useState(''),[loading,setLoading]=useState(false),[currency,setCurrency]=useState<Currency>(()=>{try{return validCurrency(localStorage.getItem('currency'))}catch{return 'USD'}});
+  const[page,setPage]=useState('home'),[q,setQ]=useState(''),[cat,setCat]=useState('All'),[pageNo,setPageNo]=useState(1),[selected,setSelected]=useState<Product|null>(null),[info,setInfo]=useState<SupplierInfo|null>(null),[notice,setNotice]=useState(''),[loading,setLoading]=useState(false),[currency,setCurrency]=useState<Currency>('USD');
   const categories=useMemo(()=>['All',...Array.from(new Set(products.map(p=>p.category)))],[]);
   const filtered=useMemo(()=>products.filter(p=>(cat==='All'||p.category===cat)&&(p.name+p.category).toLowerCase().includes(q.toLowerCase())),[q,cat]);
   const totalPages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
   const visible=filtered.slice((pageNo-1)*PAGE_SIZE,pageNo*PAGE_SIZE);
   useEffect(()=>{setPageNo(1)},[q,cat]);
+  useEffect(()=>{try{const saved=localStorage.getItem('currency');if(saved&&Object.prototype.hasOwnProperty.call(CURRENCIES,saved))setCurrency(saved as Currency)}catch{}},[]);
   useEffect(()=>{try{localStorage.setItem('currency',currency)}catch{}},[currency]);
   useEffect(()=>{const x=new URLSearchParams(location.search),id=x.get('productId'),sid=x.get('session_id');if(x.get('payment')==='success'&&id&&sid){setLoading(true);fetch('/api/unlock-product',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({productId:id,sessionId:sid})}).then(r=>r.json()).then(d=>{if(d.supplier){setInfo(d);setSelected(products.find(p=>String(p.id)===id)||null);setNotice('Payment verified — supplier access unlocked.')}else setNotice(d.error||'Payment verification failed.')}).catch(()=>setNotice('Payment verification failed.')).finally(()=>setLoading(false));}if(x.get('payment')==='cancelled')setNotice('Payment cancelled. No supplier information was unlocked.')},[]);
   const go=(x:string)=>setPage(x);
