@@ -5,52 +5,26 @@ type SupplierInfo={supplier:string;address:string;url:string};
 type Currency='USD'|'ETB'|'EUR'|'GBP'|'AED'|'CNY';
 const PAGE_SIZE=24;
 const CURRENCIES:Record<Currency,{label:string;symbol:string;rate:number}>= {
-  USD:{label:'USD',symbol:'$',rate:1/153},
-  ETB:{label:'ETB',symbol:'ETB ',rate:1},
-  EUR:{label:'EUR',symbol:'€',rate:1/180},
-  GBP:{label:'GBP',symbol:'£',rate:1/210},
-  AED:{label:'AED',symbol:'د.إ ',rate:1/42},
-  CNY:{label:'CNY',symbol:'¥',rate:1/21}
+  USD:{label:'USD',symbol:'$',rate:1/153}, ETB:{label:'ETB',symbol:'ETB ',rate:1}, EUR:{label:'EUR',symbol:'€',rate:1/180}, GBP:{label:'GBP',symbol:'£',rate:1/210}, AED:{label:'AED',symbol:'د.إ ',rate:1/42}, CNY:{label:'CNY',symbol:'¥',rate:1/21}
 };
-
-function priceInCurrency(price:string,currency:Currency){
-  const amount=Number(price.replace(/[^0-9.]/g,''));
-  if(!Number.isFinite(amount))return price;
-  const c=CURRENCIES[currency];
-  const converted=amount*c.rate;
-  return `${c.symbol}${converted.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
-}
+const validCurrency=(value:string|null):Currency=>value&&value in CURRENCIES?value as Currency:'USD';
+function priceInCurrency(price:string,currency:Currency){const amount=Number(price.replace(/[^0-9.]/g,''));if(!Number.isFinite(amount))return price;const c=CURRENCIES[currency];const converted=amount*c.rate;return `${c.symbol}${converted.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;}
 
 export default function App(){
-  const[page,setPage]=useState('home'),[q,setQ]=useState(''),[cat,setCat]=useState('All'),[pageNo,setPageNo]=useState(1),[selected,setSelected]=useState<Product|null>(null),[info,setInfo]=useState<SupplierInfo|null>(null),[notice,setNotice]=useState(''),[loading,setLoading]=useState(false),[currency,setCurrency]=useState<Currency>(()=>(localStorage.getItem('currency') as Currency)||'USD');
+  const[page,setPage]=useState('home'),[q,setQ]=useState(''),[cat,setCat]=useState('All'),[pageNo,setPageNo]=useState(1),[selected,setSelected]=useState<Product|null>(null),[info,setInfo]=useState<SupplierInfo|null>(null),[notice,setNotice]=useState(''),[loading,setLoading]=useState(false),[currency,setCurrency]=useState<Currency>(()=>{try{return validCurrency(localStorage.getItem('currency'))}catch{return 'USD'}});
   const categories=useMemo(()=>['All',...Array.from(new Set(products.map(p=>p.category)))],[]);
   const filtered=useMemo(()=>products.filter(p=>(cat==='All'||p.category===cat)&&(p.name+p.category).toLowerCase().includes(q.toLowerCase())),[q,cat]);
   const totalPages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
   const visible=filtered.slice((pageNo-1)*PAGE_SIZE,pageNo*PAGE_SIZE);
   useEffect(()=>{setPageNo(1)},[q,cat]);
-  useEffect(()=>{localStorage.setItem('currency',currency)},[currency]);
-  useEffect(()=>{
-    const x=new URLSearchParams(location.search),id=x.get('productId'),sid=x.get('session_id');
-    if(x.get('payment')==='success'&&id&&sid){
-      setLoading(true);
-      fetch('/api/unlock-product',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({productId:id,sessionId:sid})})
-        .then(r=>r.json()).then(d=>{if(d.supplier){setInfo(d);setSelected(products.find(p=>String(p.id)===id)||null);setNotice('Payment verified — supplier access unlocked.')}else setNotice(d.error||'Payment verification failed.')})
-        .catch(()=>setNotice('Payment verification failed.')).finally(()=>setLoading(false));
-    }
-    if(x.get('payment')==='cancelled') setNotice('Payment cancelled. No supplier information was unlocked.');
-  },[]);
+  useEffect(()=>{try{localStorage.setItem('currency',currency)}catch{}},[currency]);
+  useEffect(()=>{const x=new URLSearchParams(location.search),id=x.get('productId'),sid=x.get('session_id');if(x.get('payment')==='success'&&id&&sid){setLoading(true);fetch('/api/unlock-product',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({productId:id,sessionId:sid})}).then(r=>r.json()).then(d=>{if(d.supplier){setInfo(d);setSelected(products.find(p=>String(p.id)===id)||null);setNotice('Payment verified — supplier access unlocked.')}else setNotice(d.error||'Payment verification failed.')}).catch(()=>setNotice('Payment verification failed.')).finally(()=>setLoading(false));}if(x.get('payment')==='cancelled')setNotice('Payment cancelled. No supplier information was unlocked.')},[]);
   const go=(x:string)=>setPage(x);
-  const checkout=async(p:Product)=>{
-    setLoading(true);
-    try{const r=await fetch('/api/create-checkout-session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({productId:p.id})});const d=await r.json();if(!r.ok)throw Error(d.error);location.href=d.url}catch(e){setNotice(e instanceof Error?e.message:'Checkout failed');setLoading(false)}
-  };
-  return <div className="app">
-    <header><div className="brand" onClick={()=>go('home')}><span className="logo">CS</span><div><b>ChinaSource Hub</b><small>Global China Sourcing</small></div></div><nav><button onClick={()=>go('products')}>Products</button><button onClick={()=>go('services')}>Services</button><button onClick={()=>go('how')}>How it works</button><button onClick={()=>go('request')}>Request a Quote</button></nav><div style={{display:'flex',alignItems:'center',gap:8,marginLeft:'auto'}}><span style={{fontSize:12,fontWeight:700,opacity:.7}}>Currency</span><select aria-label="Choose currency" value={currency} onChange={e=>setCurrency(e.target.value as Currency)} style={{padding:'8px 10px',borderRadius:8,border:'1px solid #d8dce3',background:'#fff',fontWeight:700,cursor:'pointer'}}>{Object.entries(CURRENCIES).map(([code,c])=><option key={code} value={code}>{c.symbol}{code}</option>)}</select></div></header>
-    {notice&&<div className="notice">{notice}<button onClick={()=>setNotice('')} style={{marginLeft:12,border:0,background:'transparent',color:'#fff'}}>×</button></div>}
-    {loading&&<div className="notice">Processing securely…</div>}
+  const checkout=async(p:Product)=>{setLoading(true);try{const r=await fetch('/api/create-checkout-session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({productId:p.id})});const d=await r.json();if(!r.ok)throw Error(d.error);location.href=d.url}catch(e){setNotice(e instanceof Error?e.message:'Checkout failed');setLoading(false)}};
+  return <div className="app"><header><div className="brand" onClick={()=>go('home')}><span className="logo">CS</span><div><b>ChinaSource Hub</b><small>Global China Sourcing</small></div></div><nav><button onClick={()=>go('products')}>Products</button><button onClick={()=>go('services')}>Services</button><button onClick={()=>go('how')}>How it works</button><button onClick={()=>go('request')}>Request a Quote</button></nav><div style={{display:'flex',alignItems:'center',gap:8,marginLeft:'auto'}}><span style={{fontSize:12,fontWeight:700,opacity:.7}}>Currency</span><select aria-label="Choose currency" value={currency} onChange={e=>setCurrency(validCurrency(e.target.value))} style={{padding:'8px 10px',borderRadius:8,border:'1px solid #d8dce3',background:'#fff',fontWeight:700,cursor:'pointer'}}>{Object.entries(CURRENCIES).map(([code,c])=><option key={code} value={code}>{c.symbol}{code}</option>)}</select></div></header>
+    {notice&&<div className="notice">{notice}<button onClick={()=>setNotice('')} style={{marginLeft:12,border:0,background:'transparent',color:'#fff'}}>×</button></div>}{loading&&<div className="notice">Processing securely…</div>}
     {page==='home'?<Home go={go} currency={currency}/>:page==='products'?<main className="page"><div className="pageHead"><span className="eyebrow">PRODUCT CATALOG · {products.length} LISTINGS</span><h1>China-sourced products</h1><p>Browse the actual products imported from the uploaded Alibaba catalog. Supplier identity and direct links stay private until verified payment.</p></div><div className="filters"><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search products..."/><select value={cat} onChange={e=>setCat(e.target.value)}>{categories.map(c=><option key={c}>{c}</option>)}</select></div><div className="grid">{visible.map(p=><Card key={p.id} p={p} currency={currency} open={()=>{setInfo(null);setSelected(p)}}/>)}</div><Pagination page={pageNo} total={totalPages} setPage={setPageNo}/></main>:page==='services'?<Services/>:page==='how'?<How/>:<Request/>}
-    {selected&&<Modal p={selected} info={info} currency={currency} close={()=>{setSelected(null);setInfo(null)}} checkout={checkout}/>}<footer><b>ChinaSource Hub</b><p>Your bridge to China sourcing for buyers worldwide.</p></footer>
-  </div>
+    {selected&&<Modal p={selected} info={info} currency={currency} close={()=>{setSelected(null);setInfo(null)}} checkout={checkout}/>}<footer><b>ChinaSource Hub</b><p>Your bridge to China sourcing for buyers worldwide.</p></footer></div>
 }
 function Home({go,currency}:{go:(x:string)=>void;currency:Currency}){return <><section className="hero"><div><span className="eyebrow">GLOBAL SOURCING · CHINA</span><h1>Discover products from China. <em>Source with confidence.</em></h1><p>Browse 240 real Alibaba listings from the imported catalog, compare opportunities, then unlock supplier access when you are ready to buy.</p><div className="actions"><button className="primary" onClick={()=>go('products')}>Browse Products →</button><button className="secondary" onClick={()=>go('how')}>How it works</button></div><div className="trust"><span>✓ Real catalog listings</span><span>✓ Supplier details protected</span><span>✓ $2.50 per unlock</span></div></div><div className="heroCard"><span className="mini">SOURCE ACCESS</span><h3>One catalog. Supplier access when you need it.</h3><strong>$2.50</strong><span> per supplier unlock</span><hr/><span>Product prices display in {CURRENCIES[currency].label}. Unlock fee remains $2.50 USD.</span><button onClick={()=>go('products')}>Explore 240 products →</button></div></section><section className="section"><div className="sectionHead"><div><span className="eyebrow">CATALOG HIGHLIGHTS</span><h2>Source-ready products</h2></div><button onClick={()=>go('products')}>View all 240 →</button></div><div className="grid">{products.slice(0,6).map(p=><Card key={p.id} p={p} currency={currency} open={()=>go('products')}/>)}</div></section></>}
 function Card({p,open,currency}:{p:Product;open:()=>void;currency:Currency}){return <article className="card">{p.bigDeal&&<div className="dealBadge">🔥 BIG DEAL</div>}<img src={p.image} alt={p.name}/><div className="cardBody"><span className="tag">{p.category}</span><h3>{p.name}</h3><p>Supplier-listed product from the imported Alibaba catalog.</p><div className="meta"><b>{priceInCurrency(p.price,currency)}</b><span>{p.moq}</span></div><div className="private">🔒 Supplier details protected</div><button className="primary full" onClick={open}>View & Unlock Supplier</button></div></article>}
