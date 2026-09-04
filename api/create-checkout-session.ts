@@ -8,33 +8,33 @@ const products: Record<string, { name: string; unlock: number }> = {
   '3': { name: 'TWS Bluetooth Earbuds', unlock: 5.99 },
   '4': { name: 'Electric Kitchen Blender', unlock: 6.99 },
   '5': { name: 'Black Desktop M-ATX Gaming PC Case', unlock: 7.99 },
+  '6': { name: 'DDR3 4GB Desktop/Laptop RAM', unlock: 4.99 },
+  '7': { name: 'DDR3 8GB RAM — 16 chips', unlock: 4.99 },
+  '8': { name: 'DDR3 8GB RAM — 8 chips', unlock: 4.99 },
+  '9': { name: 'DDR4 4GB RAM', unlock: 4.99 },
+  '10': { name: 'DDR4 8GB RAM', unlock: 4.99 },
+  '11': { name: 'DDR4 16GB RAM', unlock: 4.99 },
+  '12': { name: 'DDR4 32GB RAM', unlock: 4.99 },
+  '13': { name: 'DDR5 8GB RAM', unlock: 4.99 },
+  '14': { name: 'DDR5 16GB RAM', unlock: 4.99 },
+  '15': { name: 'DDR5 32GB RAM', unlock: 4.99 },
 };
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   if (!process.env.STRIPE_SECRET_KEY) return res.status(500).json({ error: 'Stripe is not configured' });
-
   try {
     const productId = String(req.body?.productId || '');
     const product = products[productId];
     if (!product) return res.status(400).json({ error: 'Invalid product' });
-
     const origin = req.headers.origin || `https://${req.headers.host}`;
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
-      line_items: [{
-        price_data: {
-          currency: 'usd',
-          product_data: { name: `Supplier Access: ${product.name}` },
-          unit_amount: Math.round(product.unlock * 100),
-        },
-        quantity: 1,
-      }],
+      line_items: [{ price_data: { currency: 'usd', product_data: { name: `Supplier Access: ${product.name}` }, unit_amount: Math.round(product.unlock * 100) }, quantity: 1 }],
       metadata: { productId },
       success_url: `${origin}/?payment=success&productId=${encodeURIComponent(productId)}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?payment=cancelled&productId=${encodeURIComponent(productId)}`,
     });
-
     return res.status(200).json({ url: session.url });
   } catch (error) {
     console.error(error);
