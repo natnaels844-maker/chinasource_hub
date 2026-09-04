@@ -14,11 +14,12 @@ const CURRENCIES:Record<Currency,{label:string;symbol:string;etbPerUnit:number}>
 };
 const validCurrency=(value:string|null):Currency=>value&&Object.prototype.hasOwnProperty.call(CURRENCIES,value)?value as Currency:'USD';
 function priceInCurrency(price:string,currency:Currency){
-  const amountEtb=Number(price.replace(/[^0-9.]/g,''));
-  if(!Number.isFinite(amountEtb))return price;
   const c=CURRENCIES[currency];
-  const converted=amountEtb/c.etbPerUnit;
-  return `${c.symbol}${converted.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+  const matches=price.match(/\d[\d,]*(?:\.\d+)?/g)||[];
+  const amounts=matches.map(v=>Number(v.replace(/,/g,''))).filter(Number.isFinite);
+  if(!amounts.length)return price;
+  const formatted=amounts.map(amount=>(amount/c.etbPerUnit).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}));
+  return `${c.symbol}${formatted.join(`-${c.symbol}`)}`;
 }
 
 export default function App(){
