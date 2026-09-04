@@ -7,6 +7,16 @@ const privateProducts: Record<string, { supplier: string; address: string; url: 
   '3': { supplier: 'Shenzhen AudioLink Electronics Co., Ltd.', address: 'Bao’an District, Shenzhen, Guangdong, China', url: 'https://www.1688.com/' },
   '4': { supplier: 'Ningbo HomePro Appliances Co., Ltd.', address: 'Ningbo, Zhejiang, China', url: 'https://www.globalsources.com/' },
   '5': { supplier: 'Huizhou Longzhixin Electronic Technology Co., Ltd.', address: 'Huizhou, Guangdong, China', url: 'https://longzhixin.m.en.alibaba.com/?productId=1601588165721' },
+  '6': { supplier: 'Imported catalog supplier', address: 'Private until payment verification', url: 'https://www.alibaba.com/' },
+  '7': { supplier: 'Imported catalog supplier', address: 'Private until payment verification', url: 'https://www.alibaba.com/' },
+  '8': { supplier: 'Imported catalog supplier', address: 'Private until payment verification', url: 'https://www.alibaba.com/' },
+  '9': { supplier: 'Imported catalog supplier', address: 'Private until payment verification', url: 'https://www.alibaba.com/' },
+  '10': { supplier: 'Imported catalog supplier', address: 'Private until payment verification', url: 'https://www.alibaba.com/' },
+  '11': { supplier: 'Imported catalog supplier', address: 'Private until payment verification', url: 'https://www.alibaba.com/' },
+  '12': { supplier: 'Imported catalog supplier', address: 'Private until payment verification', url: 'https://www.alibaba.com/' },
+  '13': { supplier: 'Imported catalog supplier', address: 'Private until payment verification', url: 'https://www.alibaba.com/' },
+  '14': { supplier: 'Imported catalog supplier', address: 'Private until payment verification', url: 'https://www.alibaba.com/' },
+  '15': { supplier: 'Imported catalog supplier', address: 'Private until payment verification', url: 'https://www.alibaba.com/' },
 };
 
 export default async function handler(req: any, res: any) {
