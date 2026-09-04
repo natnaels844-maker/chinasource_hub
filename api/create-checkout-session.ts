@@ -4,21 +4,21 @@ const secretKey = process.env.STRIPE_SECRET_KEY || '';
 const stripe = secretKey ? new Stripe(secretKey) : null;
 
 const products: Record<string, { name: string; unlock: number }> = {
-  '1': { name: 'Portable Power Station 1000W', unlock: 9.99 },
-  '2': { name: 'Solar Street Light 200W', unlock: 7.99 },
-  '3': { name: 'TWS Bluetooth Earbuds', unlock: 5.99 },
-  '4': { name: 'Electric Kitchen Blender', unlock: 6.99 },
-  '5': { name: 'Black Desktop M-ATX Gaming PC Case', unlock: 7.99 },
-  '6': { name: 'DDR3 4GB Desktop/Laptop RAM', unlock: 4.99 },
-  '7': { name: 'DDR3 8GB RAM — 16 chips', unlock: 4.99 },
-  '8': { name: 'DDR3 8GB RAM — 8 chips', unlock: 4.99 },
-  '9': { name: 'DDR4 4GB RAM', unlock: 4.99 },
-  '10': { name: 'DDR4 8GB RAM', unlock: 4.99 },
-  '11': { name: 'DDR4 16GB RAM', unlock: 4.99 },
-  '12': { name: 'DDR4 32GB RAM', unlock: 4.99 },
-  '13': { name: 'DDR5 8GB RAM', unlock: 4.99 },
-  '14': { name: 'DDR5 16GB RAM', unlock: 4.99 },
-  '15': { name: 'DDR5 32GB RAM', unlock: 4.99 },
+  '1': { name: 'Portable Power Station 1000W', unlock: 2.5 },
+  '2': { name: 'Solar Street Light 200W', unlock: 2.5 },
+  '3': { name: 'TWS Bluetooth Earbuds', unlock: 2.5 },
+  '4': { name: 'Electric Kitchen Blender', unlock: 2.5 },
+  '5': { name: 'Black Desktop M-ATX Gaming PC Case', unlock: 2.5 },
+  '6': { name: 'DDR3 4GB Desktop/Laptop RAM', unlock: 2.5 },
+  '7': { name: 'DDR3 8GB RAM — 16 chips', unlock: 2.5 },
+  '8': { name: 'DDR3 8GB RAM — 8 chips', unlock: 2.5 },
+  '9': { name: 'DDR4 4GB RAM', unlock: 2.5 },
+  '10': { name: 'DDR4 8GB RAM', unlock: 2.5 },
+  '11': { name: 'DDR4 16GB RAM', unlock: 2.5 },
+  '12': { name: 'DDR4 32GB RAM', unlock: 2.5 },
+  '13': { name: 'DDR5 8GB RAM', unlock: 2.5 },
+  '14': { name: 'DDR5 16GB RAM', unlock: 2.5 },
+  '15': { name: 'DDR5 32GB RAM', unlock: 2.5 },
 };
 
 function getOrigin(req: any) {
