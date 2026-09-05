@@ -3,6 +3,7 @@ import {createRoot} from 'react-dom/client';
 import {onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,signOut,updateProfile,User} from 'firebase/auth';
 import {auth,googleProvider,firebaseConfigured} from './firebase';
 import './index.css';
+import './auth-modern.css';
 import App from './App';
 
 function AuthPage(){
