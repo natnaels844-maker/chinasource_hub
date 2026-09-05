@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 900" role="img" aria-labelledby="title desc">
+<title id="title">ChinaSource Hub</title><desc id="desc">ChinaSource Hub global sourcing logo with globe, cargo ship, truck and airplane</desc>
+<defs><linearGradient id="n" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#12375c"/><stop offset="1" stop-color="#071426"/></linearGradient><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e5c45b"/><stop offset="1" stop-color="#c58b17"/></linearGradient></defs>
+<rect width="900" height="900" rx="70" fill="#fff"/>
+<circle cx="450" cy="285" r="205" fill="none" stroke="url(#g)" stroke-width="22" stroke-dasharray="520 180" transform="rotate(-35 450 285)"/>
+<circle cx="450" cy="285" r="190" fill="none" stroke="url(#n)" stroke-width="10" stroke-dasharray="480 220" transform="rotate(25 450 285)"/>
+<path d="M275 305c36-82 116-138 208-138 75 0 142 38 182 98-30-15-65-23-102-23-92 0-171 25-288 63z" fill="#0b3156"/>
+<path d="M386 190l-25 42 22 21-28 37 38 15 12 42 37-14 34 27 26-41 43-4 2-48 39-20-34-34-8-40-52 13-28-25-36 34z" fill="#fff" opacity=".95"/>
+<path d="M214 485h328l70 63-28 43H266l-68-39z" fill="url(#n)" stroke="#fff" stroke-width="8"/>
+<path d="M210 485l-45-12-8 18 49 16 30 68h185v-79z" fill="#08284a"/>
+<path d="M238 449h270v88H238z" fill="url(#g)" stroke="#fff" stroke-width="8"/>
+<path d="M270 449v88M335 449v88M400 449v88M465 449v88" stroke="#fff" stroke-width="7"/>
+<path d="M238 493h270" stroke="#fff" stroke-width="7"/>
+<path d="M174 555l-8 55c35 31 95 45 170 45h240c72 0 132-26 172-75l-39 8c-29 34-76 49-139 49H300c-57 0-101-12-126-37z" fill="url(#n)"/>
+<g transform="translate(455 510)"><path d="M0 52h175l32 31v57H0z" fill="#fff" stroke="#0b3156" stroke-width="9"/><path d="M25 80h83l-8-18H25z" fill="#0b3156"/><path d="M108 65h51l25 25v21h-76z" fill="#0b3156"/><circle cx="43" cy="145" r="19" fill="#fff" stroke="#0b3156" stroke-width="9"/><circle cx="162" cy="145" r="19" fill="#fff" stroke="#0b3156" stroke-width="9"/></g>
+<path d="M690 295l92-50 22 12-65 54 59 20-9 22-72-15-35 29-12-15 31-31-50-25 10-18z" fill="#0b3156"/>
+<path d="M165 670c140 68 377 80 566-7" fill="none" stroke="#0b3156" stroke-width="16" stroke-linecap="round"/>
+<text x="450" y="765" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="66" font-weight="800" letter-spacing="3" fill="#0b3156">CHINA <tspan fill="#c58b17">SOURCE</tspan></text>
+<text x="450" y="830" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="47" font-weight="700" letter-spacing="18" fill="#0b3156">HUB</text>
+</svg>
