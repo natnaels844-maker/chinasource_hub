@@ -3,8 +3,6 @@ import Stripe from 'stripe';
 const secretKey = process.env.STRIPE_SECRET_KEY || '';
 const stripe = secretKey ? new Stripe(secretKey) : null;
 
-// The unlock fee is intentionally fixed so checkout does not depend on importing
-// the browser-side product catalog into the Vercel serverless function.
 const UNLOCK_USD = 2.5;
 
 function getOrigin(req: any) {
@@ -48,6 +46,9 @@ export default async function handler(req: any, res: any) {
     const origin = getOrigin(req);
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
+      // Explicit card support prevents Checkout from having zero valid
+      // payment methods when automatic payment methods are unavailable.
+      payment_method_types: ['card'],
       line_items: [{
         price_data: {
           currency: 'usd',
