@@ -45,7 +45,6 @@ lines=["export const privateProducts2:Record<string,{supplier:string;address:str
 for i,(name,cat,price,moq,image,link,supplier) in enumerate(products):
     lines.append(f"'{241+i}':{{supplier:'{q(supplier)}',address:'Supplier address is provided after verified payment.',url:'{q(link)}'}},")
 lines.append('};\n'); open(os.path.join(api,'private-data-2.ts'),'w',encoding='utf-8').write('\n'.join(lines))
-imports='\n'.join(f"import {{productData{n}}} from './product-data-{n}';" for n in range(1,16))
-allx=','.join(f'...productData{n}' for n in range(1,16))
 open(os.path.join(src,'products.ts'),'w',encoding='utf-8').write("import {productData1} from './product-data-1';\nimport {productData2} from './product-data-2';\nimport {productData3} from './product-data-3';\nimport {productData4} from './product-data-4';\nimport {productData5} from './product-data-5';\nimport {productData6} from './product-data-6';\n"+'\n'.join(f"import {{productData{n}}} from './product-data-{n}';" for n in range(7,16))+"\nexport type Product={id:number;name:string;category:string;price:string;moq:string;image:string;source:string;unlock:number;bigDeal?:boolean};\nexport const products:Product[]=[...productData1,...productData2,...productData3,...productData4,...productData5,...productData6,"+','.join(f'...productData{n}' for n in range(7,16))+'];\n')
 print('Imported and validated 270 unique products')
+# Trigger the catalog-import workflow after its installation.
