@@ -1,0 +1,24 @@
+name: Import 270 product catalog
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/import-catalog.py'
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: pip install requests beautifulsoup4
+      - run: python scripts/import-catalog.py
+      - name: Commit imported catalog
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/product-data-{7,8,9,10,11,12,13,14,15}.ts src/products.ts api/private-data-2.ts
+          git diff --cached --quiet || (git commit -m 'Import full 270-product sourcing catalog' && git push)
