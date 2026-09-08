@@ -9,7 +9,36 @@ const FALLBACK_RATES:Record<string,number>={USD:1/153,ETB:1,EUR:1/180,GBP:1/210,
 const CURRENCY_CODES=['USD','ETB','EUR','GBP','AED','CNY','AFN','ALL','AMD','ANG','AOA','ARS','AUD','AWG','AZN','BAM','BBD','BDT','BGN','BHD','BIF','BMD','BND','BOB','BRL','BSD','BTN','BWP','BYN','BZD','CAD','CDF','CHF','CLP','COP','CRC','CUP','CVE','CZK','DJF','DKK','DOP','DZD','EGP','ERN','ETB','EUR','FJD','FKP','FOK','GEL','GGP','GHS','GIP','GMD','GNF','GTQ','GYD','HKD','HNL','HRK','HTG','HUF','IDR','ILS','IMP','INR','IQD','IRR','ISK','JEP','JMD','JOD','JPY','KES','KGS','KHR','KID','KMF','KRW','KWD','KYD','KZT','LAK','LBP','LKR','LRD','LSL','LYD','MAD','MDL','MGA','MKD','MMK','MNT','MOP','MRU','MUR','MVR','MWK','MXN','MYR','MZN','NAD','NGN','NIO','NOK','NPR','NZD','OMR','PAB','PEN','PGK','PHP','PKR','PLN','PYG','QAR','RON','RSD','RUB','RWF','SAR','SBD','SCR','SDG','SEK','SGD','SHP','SLE','SLL','SOS','SRD','SSP','STN','SYP','SZL','THB','TJS','TMT','TND','TOP','TRY','TTD','TVD','TWD','TZS','UAH','UGX','USD','UYU','UZS','VES','VND','VUV','WST','XAF','XCD','XOF','XPF','YER','ZAR','ZMW','ZWL'];
 const validCurrency=(value:string|null,rates:Record<string,number>):Currency=>value&&rates[value]!==undefined?value:'USD';
 function currencySymbol(code:string){try{return new Intl.NumberFormat(undefined,{style:'currency',currency:code,currencyDisplay:'narrowSymbol',maximumFractionDigits:0}).formatToParts(0).find(p=>p.type==='currency')?.value||code}catch{return code}}
-function priceInCurrency(price:string,currency:Currency,rates:Record<string,number>){const rate=rates[currency];if(rate===undefined)return price;const matches=price.match(/\d[\d,]*(?:\.\d+)?/g)||[];const amounts=matches.map(v=>Number(v.replace(/,/g,''))).filter(Number.isFinite);if(!amounts.length)return price;const digits=['JPY','KRW','VND','IDR','CLP','PYG','UGX','TZS','RWF','GNF','KMF','XAF','XOF','XPF'].includes(currency)?0:2;const formatted=amounts.map(amount=>(amount*rate).toLocaleString(undefined,{minimumFractionDigits:digits,maximumFractionDigits:digits}));const symbol=currencySymbol(currency);return `${symbol}${formatted.join(`-${symbol}`)}`}
+
+// Product files contain a mixture of source currencies (older imports are ETB,
+// newer imports are USD). Always convert from the price's own source currency,
+// never assume every catalog value is ETB.
+function sourceCurrency(price:string):string{
+ const p=price.toUpperCase();
+ if(/\bETB\b|የኢትዮጵያ/.test(p))return 'ETB';
+ if(/US\s*\$|USD|\$/.test(p))return 'USD';
+ const code=p.match(/\b[A-Z]{3}\b/)?.[0];
+ return code||'USD';
+}
+function priceInCurrency(price:string,currency:Currency,rates:Record<string,number>){
+ const from=sourceCurrency(price);
+ const fromRate=rates[from];
+ const targetRate=rates[currency];
+ if(fromRate===undefined||targetRate===undefined)return price;
+ const matches=price.match(/\d[\d,]*(?:\.\d+)?/g)||[];
+ const amounts=matches.map(v=>Number(v.replace(/,/g,''))).filter(Number.isFinite);
+ if(!amounts.length)return price;
+ const digits=['JPY','KRW','VND','IDR','CLP','PYG','UGX','TZS','RWF','GNF','KMF','XAF','XOF','XPF'].includes(currency)?0:2;
+ // Rates from the API are expressed as target-currency units per 1 ETB.
+ // Convert source -> ETB -> target, so USD source prices stay USD at 1:1.
+ const formatted=amounts.map(amount=>{
+   const etb=amount/fromRate;
+   const converted=etb*targetRate;
+   return converted.toLocaleString(undefined,{minimumFractionDigits:digits,maximumFractionDigits:digits});
+ });
+ const symbol=currencySymbol(currency);
+ return `${symbol}${formatted.join(`-${symbol}`)}`;
+}
 
 async function readJson(res:Response){const text=await res.text();let data:any={};try{data=JSON.parse(text)}catch{data={error:text.trim()||`Server returned HTTP ${res.status}`}}if(!res.ok)throw new Error(data.error||`Request failed (${res.status})`);return data}
 
